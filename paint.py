@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
+import json
 app = Flask(__name__, static_folder="/home/ec2-user/pintalo_backend/processed/")
 #app = Flask(__name__, static_folder="/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/")
 
@@ -37,7 +38,12 @@ def hex_a_rgb(hex_colores):
 def convert_to_black_and_white():
     #Consigo lo que viene del formdata
     colores = request.form.get("colores")
-    colores = eval(colores) #Convierto los colores a una lista
+
+    if colores:
+        try:
+            colores = json.loads(colores)  # Convertir a lista de Python
+        except json.JSONDecodeError:
+            colores = []  # O manejar el error de conversión
     print('llego')
     print(colores)
     print(len(colores))
