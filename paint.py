@@ -9,8 +9,11 @@ import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import json
-app = Flask(__name__, static_folder="/home/ec2-user/pintalo_backend/processed/")
-#app = Flask(__name__, static_folder="/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/")
+#path='/home/ec2-user/pintalo_backend/processed/'
+path='/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/'
+
+app = Flask(__name__, static_folder=path)
+
 
 CORS(app)
 
@@ -37,13 +40,9 @@ def hex_a_rgb(hex_colores):
 @app.route("/convert", methods=["POST",'GET'])
 def convert_to_black_and_white():
     #Consigo lo que viene del formdata
-    colores = request.form.get("colores")
-
-    if colores:
-        try:
-            colores = json.loads(colores)  # Convertir a lista de Python
-        except json.JSONDecodeError:
-            colores = []  # O manejar el error de conversión
+    print('el form data',request.form)
+    colores_json = request.form.get("colores")  
+    colores = json.loads(colores_json) if colores_json else [] 
     print('llego')
     print(colores)
     print(len(colores))
@@ -127,12 +126,12 @@ def convert_to_black_and_white():
         
 
         # Mostrar la imagen original y la segmentada
-        cv2.imwrite("/home/ec2-user/pintalo_backend/processed/processed_image.png", bordes_invertidos)
-        #cv2.imwrite("/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/processed_image.png", bordes_invertidos)
+        #cv2.imwrite("/home/ec2-user/pintalo_backend/processed/processed_image.png", bordes_invertidos)
+        cv2.imwrite(path+"processed_image.png", bordes_invertidos)
 
         # Guardar la imagen en blanco y negro
 
-        with open("/home/ec2-user/pintalo_backend/processed/processed_image.png", "rb") as image_file:
+        with open(path+"processed_image.png", "rb") as image_file:
             # Codificar la imagen en Base64
             encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -170,12 +169,12 @@ def convert_to_black_and_white():
         bordes_invertidos = colores_rgb[labels].reshape(image_bgr.shape)
 
         # Mostrar la imagen original y la segmentada
-        cv2.imwrite("/home/ec2-user/pintalo_backend/processed/processed_image.png", bordes_invertidos)
-        #cv2.imwrite("/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/processed_image.png", bordes_invertidos)
+        #cv2.imwrite("/home/ec2-user/pintalo_backend/processed/processed_image.png", bordes_invertidos)
+        cv2.imwrite(path+"processed_image.png", bordes_invertidos)
 
         # Guardar la imagen en blanco y negro
 
-        with open("/home/ec2-user/pintalo_backend/processed/processed_image.png", "rb") as image_file:
+        with open(path+"processed_image.png", "rb") as image_file:
             # Codificar la imagen en Base64
             encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -198,8 +197,7 @@ def processed_file(filename):
 @app.route('/download/')
 def serve_image():
     # O, si tienes la imagen en memoria (en un objeto BytesIO por ejemplo):
-    processed_image = open("/home/ec2-user/pintalo_backend/processed/processed_image.png", "rb").read()  # Leer archivo binario
-    #processed_image = open("/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/processed_image.png", "rb").read()
+    processed_image = open(path+"processed_image.png", "rb").read()
 
     # Crear un objeto BytesIO con la imagen procesada en memoria
     image_io = io.BytesIO(processed_image)
@@ -208,4 +206,4 @@ def serve_image():
     return send_file(image_io, mimetype='image/png', as_attachment=True, download_name='imagen_procesada.png')
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=443, debug=True, ssl_context=('cert.pem', 'key.pem'))
