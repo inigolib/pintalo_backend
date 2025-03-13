@@ -9,8 +9,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import json
-path='/home/ec2-user/pintalo_backend/processed/'
-#path='/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/'
+#path='/home/ec2-user/pintalo_backend/processed/'
+path='/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/'
 
 app = Flask(__name__, static_folder=path)
 
@@ -33,14 +33,16 @@ if not os.path.exists(PROCESSED_FOLDER):
 current_filename = ""
 
 
-def hex_a_rgb(hex_colores):
-    return np.array([tuple(int(color[i:i+2], 16) for i in (1, 3, 5)) for color in hex_colores], dtype=np.uint8)
+def hex_a_bgr(hex_colores):
+    rgb_colors = np.array([tuple(int(color[i:i+2], 16) for i in (1, 3, 5)) for color in hex_colores], dtype=np.uint8)
+    # Convertir de RGB a BGR para OpenCV
+    bgr_colors = np.array([color[::-1] for color in rgb_colors], dtype=np.uint8)
+    return bgr_colors
 
 
 @app.route("/convert", methods=["POST",'GET'])
 def convert_to_black_and_white():
     #Consigo lo que viene del formdata
-    print('el form data',request.form)
     colores_json = request.form.get("colores")  
     colores = json.loads(colores_json) if colores_json else [] 
     print('llego')
@@ -142,9 +144,7 @@ def convert_to_black_and_white():
     else:
         print('colores;',colores)
         #Decodificar imagen y prepararla
-        colores_rgb=hex_a_rgb(colores)
-
-        print(colores_rgb)
+        colores_bgr=hex_a_bgr(colores)
 
         image=request.form.get('file')
 
@@ -162,11 +162,16 @@ def convert_to_black_and_white():
         # Aplanar la imagen para usar en K-Means. Convertirlo a matriz
         pixeles = image_bgr.reshape((-1, 3))
 
-        kmeans = KMeans(n_clusters=len(colores_rgb), init=colores_rgb.astype(np.float32), n_init=1, max_iter=10)
+        kmeans = KMeans(n_clusters=len(colores_bgr), 
+                init=colores_bgr.astype(np.float32), 
+                n_init=1, 
+                max_iter=300,  # Aumentar el número de iteraciones
+                random_state=42)        
         labels = kmeans.fit_predict(pixeles)
+        print(labels)
 
         # 📌 Asignar cada píxel a su color más cercano (usando los centroides)
-        bordes_invertidos = colores_rgb[labels].reshape(image_bgr.shape)
+        bordes_invertidos = colores_bgr[labels].reshape(image_bgr.shape)
 
         # Mostrar la imagen original y la segmentada
         #cv2.imwrite("/home/ec2-user/pintalo_backend/processed/processed_image.png", bordes_invertidos)
