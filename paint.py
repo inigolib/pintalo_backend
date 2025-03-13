@@ -9,8 +9,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import json
-#path='/home/ec2-user/pintalo_backend/processed/'
-path='/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/'
+path='/home/ec2-user/pintalo_backend/processed/'
+#path='/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/'
 
 app = Flask(__name__, static_folder=path)
 
