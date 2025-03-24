@@ -11,10 +11,7 @@ import matplotlib.pyplot as plt
 import json
 path='/home/ec2-user/pintalo_backend/processed/'
 #path='/Users/inigoliberal/Desktop/PINTALO/pintalo_backend/processed/'
-
 app = Flask(__name__, static_folder=path)
-
-
 CORS(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -48,7 +45,6 @@ def convert_to_black_and_white():
     print('llego')
     print(colores)
     print(len(colores))
-
 
     #Si no hay colores, hago lo de siempre
 
@@ -185,8 +181,6 @@ def convert_to_black_and_white():
 
         # Enviar la imagen en JSON
         return jsonify({"image_base64": encoded_string})
-
-    #return jsonify({"success": True, "image_url": f"/home/ec2-user/pintalo_backend/processed/processed_image.png"})
 
 
 @app.route("/uploads/<filename>")
